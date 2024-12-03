@@ -5,7 +5,8 @@ import re
 
 day = helpers.get_current_day(__file__)
 input = helpers.read_input(day, False)
-# extracts the numbers 
+
+# extracts the two numbers in the function "mul(left_int,right_int)" and returns the product 
 def extractProductFrom(input: str) -> int:
     left_int = int(input.split('(')[1].split(',')[0])
     right_int = int(input.split(',')[1].split(')')[0])
