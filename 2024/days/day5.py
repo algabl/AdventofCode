@@ -43,31 +43,40 @@ def separateValidAndInvalidUpdates():
     valid_updates = []
     invalid_updates = []
     for update in updates:
-        isValid = True
-        for index, number in enumerate(update):
-            rules_found_in = rulesIn(number)
-            for rule in rules_found_in:
-                if number == rule[0]:
-                    index_of_other = indexOf(rule[1], update)
-                    if index_of_other == None:
-                        isValid = True
-                    else:
-                        isValid = index < index_of_other
-                elif number == rule[1]:
-                    index_of_other = indexOf(rule[0], update)
-                    if index_of_other == None:
-                        isValid = True
-                    else:
-                        isValid = index > index_of_other
-                if isValid == False:
-                    break
-            if isValid == False:
-                break
+        violation, isValid = getRuleViolations(update)
         if isValid:
             valid_updates.append(update)
         else:
             invalid_updates.append(update)
     return valid_updates, invalid_updates
+
+def getRuleViolations(update):
+    # violations need rule, index of left number, index of right number
+    violation = []
+    isValid = True
+    for index, number in enumerate(update):
+        rules_found_in = rulesIn(number)
+        for rule in rules_found_in:
+            if number == rule[0]:
+                right_index = indexOf(rule[1], update)
+                left_index = index
+                if right_index == None:
+                    isValid = True
+                else:
+                    isValid = index < right_index
+            elif number == rule[1]:
+                left_index = indexOf(rule[0], update)
+                right_index = index
+                if left_index == None:
+                    isValid = True
+                else:
+                    isValid = index > left_index
+            if isValid == False:
+                violation = [left_index, right_index]
+                break
+        if isValid == False:
+            break
+    return violation, isValid
 
 def part1() -> int:
     # loop through each update
@@ -91,14 +100,23 @@ def part1() -> int:
 
 # if it comes after, check to make sure that is true
 
+def switch_elements(update, violation):
+    update[violation[0]], update[violation[1]] = update[violation[1]], update[violation[0]]
+    return update
 
 def part2() -> int:
     total = 0
 
     valid_updates, invalid_updates = separateValidAndInvalidUpdates()
 
-
-    return 0
+    for update in invalid_updates:
+        violation, isValid = getRuleViolations(update)
+        while not isValid:
+            update = switch_elements(update, violation)
+            violation, isValid = getRuleViolations(update)
+        middle = update[int((len(update) - 1) / 2)]
+        total += middle
+    return total
 
 print(f"----- Day {day}: -----")
 print(f"Part1: {part1()}")
